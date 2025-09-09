@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const axiosInstance = axios.create({ baseURL: 'http://localhost:8000' });
+const axiosInstance = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
+});
 
 axiosInstance.interceptors.request.use(async (config) => {
   let accessToken = localStorage.getItem('jwt');
