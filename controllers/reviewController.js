@@ -18,7 +18,6 @@ exports.checkUserOnTour = catchAsync(async (req, res, next) => {
     user: req.user.id,
     tour: req.params.tourId,
   });
-  console.log(booking? true : false, 'booking');
   if (booking) return next();
   else
     next(

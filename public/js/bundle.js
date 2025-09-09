@@ -12639,7 +12639,7 @@ var login = exports.login = /*#__PURE__*/function () {
               location.assign('/');
             }, 1500);
           }
-          console.log(res);
+
           _context.n = 3;
           break;
         case 2:

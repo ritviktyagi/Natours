@@ -21,7 +21,7 @@ const port = process.env.PORT || 8000;
 // Start Server
 const server = app.listen(port, () =>
   console.log(`server running on port ${port}`),
-console.log('http://localhost:8000')
+// console.log('http://localhost:8000')
 );
 
 process.on('unhandledRejection', (err) => {

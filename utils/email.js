@@ -13,7 +13,6 @@ module.exports = class Email {
   newTransport() {
     if (process.env.NODE_ENV === 'production') {
       // sendgrid
-      console.log('entered in prod');
       try {
         
         return nodemailer.createTransport({

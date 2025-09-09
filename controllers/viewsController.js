@@ -26,7 +26,6 @@ exports.getTour = catchAsync(async (req, res, next) => {
     path: 'reviews',
     fields: 'review rating user',
   });
-  console.log(tour.id, 'tourid');
   if (!tour) {
     return next(new AppError('There is no route with that name', 404));
   }

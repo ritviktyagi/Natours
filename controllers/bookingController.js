@@ -8,7 +8,6 @@ const factory = require('./factoryHandler');
 exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   // 1) Get the currently booked tour
   try {
-    console.log(req.params.tourId, 'req.params');
     const tour = await Tour.findById(req.params.tourId);
 
     // 2) Create checkout session
@@ -53,7 +52,6 @@ exports.createBookingCheckout = catchAsync(async (req, res, next) => {
 
   await Booking.create({ tour, user, price });
   const userDetails = await User.findById(user);
-  console.log({userDetails})
   const toursBooked = userDetails.toursBooked || [];
   toursBooked.push(tour);
   await User.findByIdAndUpdate(user, { toursBooked: toursBooked });
@@ -62,11 +60,9 @@ exports.createBookingCheckout = catchAsync(async (req, res, next) => {
 });
 
 exports.getBookingsOnATour = catchAsync(async (req, res, next) => {
-  console.log(req.params.tourId, 'tourid');
   if (!req.originalUrl.includes('/tours/')) return next();
 
   const bookings = await Booking.find({ tour: req.params.tourId });
-  console.log({ bookings });
   res.status(200).json({
     status: 'success',
     results: bookings.length,

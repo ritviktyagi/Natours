@@ -101,15 +101,13 @@ const createAndSendToken = async (
 exports.verifyEmail = catchAsync(async (req, res, next) => {
   try {
     const { token } = req.query;
-    console.log({ token });
+    // console.log({ token });
 
     // Verify JWT
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
-    console.log({ decoded });
 
     // Find user
     const user = await User.findById(decoded.id);
-    console.log({ user });
     if (!user) return res.status(400).send('User not found');
 
     // Mark user as verified
@@ -237,10 +235,8 @@ exports.disable2FA = catchAsync(async (req, res, next) => {
 });
 
 exports.logout = catchAsync(async (req, res, next) => {
-  console.log(req.headers.cookie.split('refreshToken=')[1], 'cookie');
   const tokens = req.headers.cookie.split('refreshToken=')[1];
   const refreshToken = tokens?.split(';')[0];
-  console.log(refreshToken);
 
   if (refreshToken) {
     // Optional: clear from DB
@@ -310,7 +306,6 @@ exports.isLoggedIn = async (req, res, next) => {
 
       // check if user still exists
       const currentUser = await User.findById(decoded.id);
-      console.log({currentUser})
       if (!currentUser) {
         return next();
       }
