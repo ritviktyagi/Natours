@@ -32,6 +32,7 @@ function generateRefreshToken(id) {
 
 const createAndSendToken = async (
   res,
+  req,
   status,
   id,
   user,
@@ -73,9 +74,8 @@ const createAndSendToken = async (
       Date.now() + process.env.JWT_ACCESS_COOKIE_EXPIRES_IN * 60 * 60 * 1000,
     ),
     httpOnly: true,
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
   };
-
-  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
   res.cookie('refreshToken', refreshToken, cookieOptions);
   res.cookie('jwt', accessToken, accessCookieOptions);
@@ -168,7 +168,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 
   const url = `${req.protocol}://${req.get('host')}/api/v1/users/verify-email`;
   // await new Email(user, url).sendWelcome();
-  createAndSendToken(res, 201, user._id, user, url, 'true');
+  createAndSendToken(res, req, 201, user._id, user, url, 'true');
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -191,7 +191,7 @@ exports.login = catchAsync(async (req, res, next) => {
     });
   }
 
-  createAndSendToken(res, 200, user._id, user);
+  createAndSendToken(res, req, 200, user._id, user);
 });
 
 exports.loginStep2 = catchAsync(async (req, res, next) => {
@@ -214,7 +214,7 @@ exports.loginStep2 = catchAsync(async (req, res, next) => {
       res.status(401).json({ message: 'Invalid 2FA code' });
     }
 
-    createAndSendToken(res, 200, user._id, user);
+    createAndSendToken(res, req, 200, user._id, user);
   } catch (error) {
     console.log(error);
     res.status(500).json('Something went wrong with 2 factor authentication');
@@ -399,7 +399,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // 3) Update changePasswordAt property for the user
 
   // 4) Log the user in, send JWT
-  createAndSendToken(res, 200, user._id, user);
+  createAndSendToken(res, req, 200, user._id, user);
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
@@ -416,5 +416,5 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
   await user.save();
   // 4) Log user in, send JWT
-  createAndSendToken(res, 200, user._id, user);
+  createAndSendToken(res, req, 200, user._id, user);
 });
