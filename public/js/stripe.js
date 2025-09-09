@@ -1,4 +1,4 @@
-import axios from './axios';
+import axiosInstance from './axios';
 import { showAlert } from './alerts';
 // import Stripe from 'stripe';
 
@@ -7,7 +7,7 @@ const stripe = Stripe(process.env.STRIPE_KEY);
 export const bookTour = async (tourId) => {
   try {
     // 1) Get checkout session from API
-    const session = await axios.get(
+    const session = await axiosInstance.get(
       `/api/v1/bookings/checkout-session/${tourId}`,
     );
 
