@@ -8,6 +8,7 @@ const compression = require('compression');
 const mongoSanitize = require('express-mongo-sanitize');
 const sanitizeHtml = require('sanitize-html');
 const hpp = require('hpp');
+const cors = require('cors');
 // const os = require("os");
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -25,6 +26,9 @@ app.set('views engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
 // Middlewares
+app.use(cors());
+
+app.options('*', cors());
 
 // set security http headers
 app.use(
