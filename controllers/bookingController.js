@@ -14,7 +14,8 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
-      success_url: `${req.protocol}://${req.get('host')}/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price}`,
+      // success_url: `${req.protocol}://${req.get('host')}/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price}`,
+      success_url: `${req.protocol}://${req.get('host')}/my-tours`,
       cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
       customer_email: req.user.email,
       client_reference_id: req.params.tourId,
@@ -44,20 +45,45 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.createBookingCheckout = catchAsync(async (req, res, next) => {
-  // This is only TEMPORARY solution, not secure
-  const { tour, user, price } = req.query;
-
-  if (!tour && !user && !price) return next();
-
+const createBookingCheckout = async (session) => {
+  const tour = session.client_reference_id;
+  const user = (await User.findOne({ email: session.customer_email })).id;
+  const price = session.line_items[0].unit_amount / 100;
   await Booking.create({ tour, user, price });
-  const userDetails = await User.findById(user);
-  const toursBooked = userDetails.toursBooked || [];
-  toursBooked.push(tour);
-  await User.findByIdAndUpdate(user, { toursBooked: toursBooked });
+};
 
-  res.redirect(req.originalUrl.split('?')[0]);
-});
+exports.webhookCheckout = (req, res, next) => {
+  const signature = req.headers['stripe-signature'];
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      signature,
+      process.env.STRIPE_WEBHOOK_KEY,
+    );
+  } catch (error) {
+    res.status(400).send(`Webhook error: ${error.message}`);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    createBookingCheckout(event.data.object);
+  }
+};
+
+// exports.createBookingCheckout = catchAsync(async (req, res, next) => {
+//   // This is only TEMPORARY solution, not secure
+//   const { tour, user, price } = req.query;
+
+//   if (!tour && !user && !price) return next();
+
+//   await Booking.create({ tour, user, price });
+//   const userDetails = await User.findById(user);
+//   const toursBooked = userDetails.toursBooked || [];
+//   toursBooked.push(tour);
+//   await User.findByIdAndUpdate(user, { toursBooked: toursBooked });
+
+//   res.redirect(req.originalUrl.split('?')[0]);
+// });
 
 exports.getBookingsOnATour = catchAsync(async (req, res, next) => {
   if (!req.originalUrl.includes('/tours/')) return next();
